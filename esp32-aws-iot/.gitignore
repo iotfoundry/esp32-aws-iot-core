@@ -1,0 +1,40 @@
+# ESP32 AWS IoT Core - Device Configuration
+
+# Generated AWS configuration (contains sensitive certificate data)
+aws_config.h
+
+# WiFi configuration (contains sensitive credentials)
+wifi_config.h
+
+# AWS Root CA Certificate (optional - can be committed or ignored)
+# AmazonRootCA1.pem
+
+# Arduino IDE build files
+*.bin
+*.elf
+*.map
+*.hex
+
+# Arduino IDE preferences
+preferences.txt
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

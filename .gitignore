@@ -1,0 +1,31 @@
+# ESP32 AWS IoT Core - Root .gitignore
+
+# Generated AWS configuration (contains sensitive data)
+esp32-aws-iot/aws_config.h
+
+# WiFi configuration (contains sensitive credentials)
+esp32-aws-iot/wifi_config.h
+
+# Terraform sensitive files
+terraform/esp32_config.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log

@@ -42,49 +42,60 @@ jobs:
 
     - name: Run Static Analysis
       run: |
-        # Check for hardcoded credentials
-        echo "Checking for hardcoded WiFi credentials..."
-        if grep -r "const char.*WIFI_SSID.*=" esp32-aws-iot/esp32-aws-iot.ino; then
-          echo "❌ Hardcoded WiFi credentials found in main file"
+        # Security and Configuration Checks
+        echo "🔍 Running security and configuration checks..."
+
+        # Check for hardcoded credentials in main file
+        echo "Checking for hardcoded credentials in main file..."
+        if grep -E "(WIFI_SSID|WIFI_PASSWORD|AWS_IOT_ENDPOINT|AWS_CERT_|THING_NAME).*=" esp32-aws-iot/esp32-aws-iot.ino | grep -v "//"; then
+          echo "❌ Hardcoded credentials found in main file"
+          echo "   Move credentials to separate config files"
           exit 1
         else
-          echo "✅ No hardcoded WiFi credentials in main file"
+          echo "✅ No hardcoded credentials in main file"
         fi
 
-        echo "Checking for hardcoded AWS credentials..."
-        if grep -r "const char.*AWS_IOT_ENDPOINT.*=" esp32-aws-iot/esp32-aws-iot.ino; then
-          echo "❌ Hardcoded AWS credentials found in main file"
+        # Check for proper configuration includes
+        echo "Checking for proper configuration includes..."
+        REQUIRED_INCLUDES=("wifi_config.h" "aws_config.h" "device_config.h")
+        for include in "${REQUIRED_INCLUDES[@]}"; do
+          if grep -q "#include \"$include\"" esp32-aws-iot/esp32-aws-iot.ino; then
+            echo "✅ $include include found"
+          else
+            echo "❌ Missing $include include"
+            exit 1
+          fi
+        done
+
+        # Check for template files (should exist)
+        echo "Checking for required template files..."
+        REQUIRED_TEMPLATES=("wifi_config_template.h" "aws_config_template.h")
+        for template in "${REQUIRED_TEMPLATES[@]}"; do
+          if [ -f "esp32-aws-iot/$template" ]; then
+            echo "✅ $template found"
+          else
+            echo "❌ Missing $template"
+            exit 1
+          fi
+        done
+
+        # Check for accidentally committed sensitive files
+        echo "Checking for accidentally committed sensitive files..."
+        if git ls-files | grep -E "(aws_config\.h|wifi_config\.h)$"; then
+          echo "❌ Sensitive files are committed to git"
+          echo "   These files should be gitignored"
           exit 1
         else
-          echo "✅ No hardcoded AWS credentials in main file"
+          echo "✅ No sensitive files committed to git"
         fi
 
-        echo "Checking for proper includes..."
-        if grep -q '#include "wifi_config.h"' esp32-aws-iot/esp32-aws-iot.ino; then
-          echo "✅ WiFi config include found"
+        # Check gitignore contains sensitive files
+        echo "Checking .gitignore configuration..."
+        if grep -q "aws_config\.h" esp32-aws-iot/.gitignore && grep -q "wifi_config\.h" esp32-aws-iot/.gitignore; then
+          echo "✅ Sensitive files properly gitignored"
         else
-          echo "❌ Missing WiFi config include"
+          echo "❌ Sensitive files not properly gitignored"
           exit 1
-        fi
-
-        if grep -q '#include "aws_config.h"' esp32-aws-iot/esp32-aws-iot.ino; then
-          echo "✅ AWS config include found"
-        else
-          echo "❌ Missing AWS config include"
-          exit 1
-        fi
-
-        echo "Checking for sensitive files in repository..."
-        if [ -f "esp32-aws-iot/aws_config.h" ] && grep -q "BEGIN CERTIFICATE" esp32-aws-iot/aws_config.h; then
-          echo "⚠️  Warning: aws_config.h contains certificates (should be gitignored)"
-        else
-          echo "✅ aws_config.h properly configured"
-        fi
-
-        if [ -f "esp32-aws-iot/wifi_config.h" ] && grep -q "your_wifi_ssid" esp32-aws-iot/wifi_config.h; then
-          echo "✅ wifi_config.h using template values"
-        else
-          echo "⚠️  Warning: wifi_config.h may contain real credentials"
         fi
 
     - name: Test Configuration Scripts

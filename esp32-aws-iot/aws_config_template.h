@@ -49,17 +49,4 @@ Your device private key content here
 // MQTT Topics (AWS IoT Core uses $aws/things/{thingName}/...)
 const char *MQTT_TOPIC_PREFIX = "$aws/things/ESP32_Thing"; // Will be used as: $aws/things/ESP32_Thing/data, etc.
 
-// MQTT Settings
-const int MQTT_QOS = 1;         // Quality of Service level (0, 1, or 2)
-const bool MQTT_RETAIN = false; // Retain messages
-
-// Connection settings
-const int MQTT_RECONNECT_DELAY = 5000;    // Delay between reconnection attempts (ms)
-const int MQTT_KEEPALIVE_INTERVAL = 60;   // Keep alive interval (seconds)
-const int MQTT_SOCKET_TIMEOUT_VALUE = 15; // Socket timeout (seconds)
-
-// Message intervals
-const unsigned long DATA_PUBLISH_INTERVAL = 30000; // 30 seconds
-const unsigned long HEARTBEAT_INTERVAL = 60000;    // 60 seconds
-
 #endif

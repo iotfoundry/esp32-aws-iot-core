@@ -1,170 +1,45 @@
-# ESP32 AWS IoT Core Device Code
+# ESP32 AWS IoT Core Device
 
-Complete Arduino implementation for ESP32 devices to connect to AWS IoT Core with comprehensive error handling, MQTT communication, and device shadow support.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Hardware Requirements](#hardware-requirements)
-- [Software Requirements](#software-requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [MQTT Topics](#mqtt-topics)
-- [Error Handling](#error-handling)
-- [Troubleshooting](#troubleshooting)
-- [API Reference](#api-reference)
-- [Examples](#examples)
+A simplified Arduino implementation for ESP32-C3 devices to connect to AWS IoT Core with MQTT communication and built-in sensor monitoring.
 
 ## Overview
 
-This ESP32 Arduino project provides a complete solution for connecting ESP32 microcontrollers to AWS IoT Core. It includes automatic WiFi connection, secure MQTT communication, device shadow synchronization, and comprehensive error handling with detailed diagnostics.
+This ESP32-C3 Arduino project provides a clean, reliable solution for connecting to AWS IoT Core. It includes automatic WiFi connection, secure MQTT communication, and comprehensive system monitoring using only built-in hardware.
 
-### Key Capabilities
+### Key Features
 
 - **Secure AWS IoT Core Connection**: Mutual TLS authentication with X.509 certificates
-- **Device Shadow Integration**: Bidirectional state synchronization with AWS
+- **Built-in Sensor Monitoring**: Temperature, WiFi signal, memory usage, and system information
 - **MQTT Communication**: Publish sensor data and receive commands
 - **Auto-reconnection**: Automatic reconnection on network failures
-- **Error Diagnostics**: Detailed error reporting and troubleshooting guidance
-- **Modular Design**: Easy to extend and customize
-
-## Features
-
-### Core Features
-
-- ✅ **WiFi Management**: Automatic connection with retry logic
-- ✅ **AWS IoT Core Integration**: Secure MQTT with mutual TLS
-- ✅ **Device Shadow Support**: Full shadow document synchronization
-- ✅ **Command Processing**: Handle cloud-to-device commands
-- ✅ **Data Publishing**: Send sensor data and device status
-- ✅ **Heartbeat System**: Regular status updates
-- ✅ **Error Recovery**: Automatic reconnection and error handling
-- ✅ **Serial Debugging**: Comprehensive debug output
-
-### Advanced Features
-
-- **Certificate Validation**: Automatic certificate format checking
-- **Connection Diagnostics**: Detailed connection status reporting
-- **MQTT QoS Support**: Reliable message delivery
-- **JSON Message Format**: Structured data exchange
-- **Configurable Timeouts**: Adjustable connection and operation timeouts
-- **Memory Management**: Efficient memory usage for ESP32
+- **Configurable Features**: Enable/disable diagnostic functions as needed
+- **Modular Design**: Clean separation of AWS and device configuration
 
 ## Hardware Requirements
 
-### Required Hardware
-
-- **ESP32 Development Board**: Any ESP32 or ESP32-S series board
-- **USB Cable**: For programming and power
-- **WiFi Network**: 2.4GHz WiFi connection
-- **Computer**: For Arduino IDE and programming
-
-### Recommended Hardware
-
-- **ESP32 DevKitC**: Official Espressif development board
-- **ESP32-S3**: For enhanced performance and features
-- **External Antenna**: For better WiFi range (if supported by board)
+- **ESP32-C3** microcontroller
+- **WiFi connection** for internet access
+- **No external sensors required** - uses built-in capabilities
 
 ## Software Requirements
 
-### Required Software
-
-- **Arduino IDE**: Version 2.0 or later
-- **ESP32 Board Package**: Espressif ESP32 Arduino Core
+- **Arduino IDE** (1.8.19 or later)
+- **ESP32 Arduino Core** (2.0.0 or later)
 - **Required Libraries**:
-  - `WiFi` (built-in)
-  - `WiFiClientSecure` (built-in)
-  - `PubSubClient` (by Nick O'Leary)
-  - `ArduinoJson` (by Benoit Blanchon)
-
-### Installation Steps
-
-1. **Install Arduino IDE**
-   - Download from <https://www.arduino.cc/en/software>
-
-2. **Install ESP32 Board Package**
-   - Open Arduino IDE
-   - Go to File → Preferences
-   - Add this URL to Additional Board Manager URLs:
-
-     ```plaintext
-     https://espressif.github.io/arduino-esp32/package_esp32_index.json
-     ```
-
-   - Go to Tools → Board → Boards Manager
-   - Search for "ESP32" and install "ESP32 by Espressif Systems"
-
-3. **Install Required Libraries**
-   - Go to Tools → Manage Libraries
-   - Install the following libraries:
-     - `PubSubClient` by Nick O'Leary
-     - `ArduinoJson` by Benoit Blanchon
+  - WiFi (built-in)
+  - WiFiClientSecure (built-in)
+  - PubSubClient
+  - ArduinoJson
 
 ## Installation
 
-### Quick Setup
-
-1. **Clone the Repository**
-
-   ```bash
-   git clone <repository-url>
-   cd esp32-aws-iot-core/esp32-aws-iot
-   ```
-
-2. **Run Setup Script**
-
-   **Windows:**
-
-   ```cmd
-   setup.bat
-   ```
-
-   **Linux/macOS:**
-
-   ```bash
-   chmod +x setup.sh
-   ./setup.sh
-   ```
-
-3. **Download Root CA Certificate**
-
-   ```bash
-   curl -o AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem
-   ```
-
-4. **Generate AWS Configuration**
-
-   **Windows:**
-
-   ```cmd
-   generate_aws_config.ps1
-   ```
-
-   **Linux/macOS:**
-
-   ```bash
-   chmod +x generate_aws_config.sh
-   ./generate_aws_config.sh
-   ```
-
-### Manual Setup
-
-If you prefer manual setup:
-
-1. **Configure WiFi**
-   - Copy `wifi_config_template.h` to `wifi_config.h`
-   - Edit `wifi_config.h` with your WiFi credentials
-
-2. **Configure AWS**
-   - Ensure `esp32_config.json` exists in the parent `terraform/` directory
-   - Run the appropriate configuration generator script
-   - Verify `aws_config.h` is generated correctly
-
-3. **Download Dependencies**
-   - Download `AmazonRootCA1.pem` from AWS Trust Repository
-   - Place it in the `esp32-aws-iot/` directory
+1. **Clone the repository**
+2. **Install required libraries** in Arduino IDE:
+   - PubSubClient by Nick O'Leary
+   - ArduinoJson by Benoit Blanchon
+3. **Configure WiFi** in `wifi_config.h`
+4. **Generate AWS config** using Terraform (see Configuration section)
+5. **Upload to ESP32-C3**
 
 ## Configuration
 
@@ -173,259 +48,189 @@ If you prefer manual setup:
 Edit `wifi_config.h`:
 
 ```cpp
-#ifndef WIFI_CONFIG_H
-#define WIFI_CONFIG_H
-
-// WiFi credentials
-#define WIFI_SSID "your_wifi_ssid"
-#define WIFI_PASSWORD "your_wifi_password"
-
-// WiFi connection settings
-#define WIFI_TIMEOUT_MS 20000
-#define WIFI_RETRY_ATTEMPTS 3
-
-#endif
+const char* WIFI_SSID = "YourWiFiNetwork";
+const char* WIFI_PASSWORD = "YourWiFiPassword";
 ```
 
 ### AWS Configuration
 
-The `aws_config.h` file is automatically generated and contains:
+The AWS configuration is generated by Terraform and stored in `aws_config.h`:
+
+- AWS IoT endpoint
+- Thing name
+- X.509 certificates (device, CA, private key)
+- MQTT settings
+
+### Device Configuration
+
+Edit `device_config.h` to customize:
 
 ```cpp
-// AWS IoT Core endpoint
-const char* AWS_IOT_ENDPOINT = "your-endpoint.iot.region.amazonaws.com";
-const int AWS_IOT_PORT = 8883;
+// Timing intervals
+const unsigned long DATA_PUBLISH_INTERVAL = 5000;     // 5 seconds
+const unsigned long HEARTBEAT_INTERVAL = 30000;       // 30 seconds
 
-// Device information
-const char* THING_NAME = "your-thing-name";
-
-// Certificates (automatically populated)
-const char* AWS_CERT_CRT = "-----BEGIN CERTIFICATE-----\n...";
-const char* AWS_CERT_PRIVATE = "-----BEGIN RSA PRIVATE KEY-----\n...";
-const char* AWS_CERT_CA = "-----BEGIN CERTIFICATE-----\n...";
-
-// MQTT configuration
-const char* MQTT_TOPIC_PREFIX = "$aws/things/your-thing-name";
+// Feature switches
+const bool ENABLE_TEMPERATURE_SENSOR = true;          // Built-in temperature
+const bool ENABLE_CONNECTION_MONITORING = true;       // Connection monitoring
+const bool ENABLE_GRACEFUL_RECONNECTION = true;       // Auto-reconnection
+const bool ENABLE_ERROR_DIAGNOSTICS = true;           // Error logging
 ```
 
 ## Usage
 
-### Basic Usage
+### Data Published
 
-1. **Open in Arduino IDE**
-   - Open `esp32-aws-iot.ino` in Arduino IDE
-   - Select your ESP32 board from Tools → Board
-   - Select the correct COM port from Tools → Port
+The device publishes comprehensive system data every 5 seconds to `{THING_NAME}/pub`:
 
-2. **Configure Settings**
-   - Edit `wifi_config.h` with your WiFi credentials
-   - Ensure `aws_config.h` is properly generated
-
-3. **Upload and Monitor**
-   - Click Upload to compile and upload to ESP32
-   - Open Serial Monitor (115200 baud) to view debug output
-
-### Serial Monitor Output
-
-The device provides detailed serial output:
-
-```plaintext
-ESP-ROM:esp32c3-api1-20210207
-WiFi connecting to: YourWiFiNetwork
-WiFi connected! IP: 192.168.1.100
-Connecting to AWS IoT Core: your-endpoint.iot.region.amazonaws.com
-🔌 Connecting to AWS IoT Core with ID: your-thing-name
-✅ AWS IoT Core connected!
-📡 Subscribing to topics...
-📤 Publishing initial data...
+```json
+{
+  "device_id": "basic-device",
+  "timestamp": 12345,
+  "temperature": 25.6,           // Built-in temperature sensor
+  "wifi_rssi": -50,              // WiFi signal strength
+  "wifi_ssid": "YourWiFi",       // WiFi network name
+  "free_heap": 153840,           // Available RAM
+  "uptime": 30,                  // Seconds since boot
+  "mqtt_connected": true,        // Connection status
+  "cpu_freq": 160,               // CPU frequency (MHz)
+  "flash_size": 4194304,         // Flash size (bytes)
+  "chip_model": "ESP32-C3",      // Chip model
+  "chip_revision": 3             // Hardware revision
+}
 ```
 
-## MQTT Topics
+### MQTT Topics
 
-### Published Topics
+- **`{THING_NAME}/pub`** - Sensor data and system information
+- **`{THING_NAME}/heartbeat`** - Heartbeat messages (every 30s)
+- **`{THING_NAME}/status`** - Device status (every 15s)
+- **`{THING_NAME}/sub`** - Commands from cloud
 
-| Topic | Description | Message Format |
-|-------|-------------|----------------|
-| `$aws/things/{thing_name}/data` | Sensor data | JSON with timestamp, values |
-| `$aws/things/{thing_name}/status` | Device status | JSON with connection state |
-| `$aws/things/{thing_name}/heartbeat` | Heartbeat | JSON with uptime, memory |
-| `$aws/things/{thing_name}/response` | Command responses | JSON with result, data |
+### Commands
 
-### Subscribed Topics
+Send JSON commands to `{THING_NAME}/sub`:
 
-| Topic | Description | Message Format |
-|-------|-------------|----------------|
-| `$aws/things/{thing_name}/commands` | Device commands | JSON with command, parameters |
-| `$aws/things/{thing_name}/config` | Configuration updates | JSON with settings |
-| `$aws/things/{thing_name}/shadow/update/accepted` | Shadow update confirmations | JSON shadow document |
-| `$aws/things/{thing_name}/shadow/update/rejected` | Shadow update rejections | JSON error details |
+```json
+{
+  "command": "led",
+  "state": "on"
+}
+```
 
-## Error Handling
+```json
+{
+  "command": "status"
+}
+```
 
-### Error Codes and Diagnostics
+## Built-in Capabilities
 
-The device provides detailed error reporting:
+### Sensors
 
-#### MQTT Connection Errors
+- **Temperature**: Internal chip temperature via `temperatureRead()`
+- **WiFi Signal**: RSSI strength and network information
+- **Memory**: Free heap monitoring
+- **System**: CPU frequency, flash size, chip model/revision
 
-- **MQTT_CONNECTION_TIMEOUT (-4)**
-  - **Diagnosis**: AWS resources don't exist
-  - **Solution**: Create AWS IoT Core resources using Terraform
+### Features
 
-- **MQTT_CONNECT_FAILED (-2)**
-  - **Diagnosis**: Certificate or policy issues
-  - **Solution**: Check certificate registration and policy attachment
+- **Connection Monitoring**: Automatic connection status checking
+- **Graceful Reconnection**: 30-second cooldown between reconnection attempts
+- **Error Diagnostics**: Detailed error logging (configurable)
+- **DNS Checking**: Network connectivity validation
+- **Certificate Validation**: Certificate integrity checking
 
-- **MQTT_CONNECT_UNAUTHORIZED (5)**
-  - **Diagnosis**: Policy permission issues
-  - **Solution**: Verify policy allows MQTT connect operations
+## Testing
 
-#### Network Errors
+### AWS IoT Console
 
-- **WiFi Connection Failed**
-  - **Diagnosis**: Invalid credentials or network unavailable
-  - **Solution**: Check WiFi credentials and network availability
+1. **Subscribe to topics**:
+   - `basic-device/pub` - Sensor data
+   - `basic-device/heartbeat` - Heartbeat messages
+   - `basic-device/status` - Device status
 
-- **DNS Resolution Failed**
-  - **Diagnosis**: Cannot resolve AWS IoT Core endpoint
-  - **Solution**: Check internet connectivity and endpoint URL
+2. **Send commands** to `basic-device/sub`:
+
+   ```json
+   {"command": "led", "state": "on"}
+   ```
+
+### Serial Monitor
+
+Open Serial Monitor (115200 baud) to see:
+
+```plaintext
+🔧 Setting up sensors...
+  ✅ Temperature sensor enabled (Built-in)
+🔧 Sensor setup complete!
+Connecting to Wi-Fi
+✅ WiFi connected!
+✅ MQTT connected!
+✓ Data published to: basic-device/pub
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-#### 1. WiFi Connection Problems
+1. **WiFi Connection Failed**
+   - Check credentials in `wifi_config.h`
+   - Verify network availability
 
-**Symptoms:**
+2. **MQTT Connection Failed**
+   - Check AWS certificates in `aws_config.h`
+   - Verify AWS IoT endpoint
+   - Check Terraform policy permissions
 
-- Device fails to connect to WiFi
-- "WiFi connection failed" error
+3. **No Data Published**
+   - Check Serial Monitor for error messages
+   - Verify MQTT connection status
+   - Check topic permissions in AWS IoT policy
 
-**Solutions:**
+### Debug Information
 
-- Verify WiFi credentials in `wifi_config.h`
-- Check WiFi network availability
-- Ensure 2.4GHz network (ESP32 doesn't support 5GHz)
-- Check WiFi signal strength
-
-#### 2. AWS IoT Core Connection Issues
-
-**Symptoms:**
-
-- MQTT connection timeout
-- Certificate errors
-- Authentication failures
-
-**Solutions:**
-
-- Verify AWS resources exist in IoT Core Console
-- Check certificate registration and activation
-- Ensure policy is attached to certificate
-- Verify policy permissions
-- Check endpoint URL format
-
-#### 3. Certificate Issues
-
-**Symptoms:**
-
-- Certificate format errors
-- SSL handshake failures
-- "Bad credentials" errors
-
-**Solutions:**
-
-- Regenerate `aws_config.h` from Terraform output
-- Verify certificate format (PEM encoding)
-- Check certificate expiration
-- Ensure `AmazonRootCA1.pem` is downloaded
-
-## API Reference
-
-### Core Functions
-
-#### `void setup()`
-
-Initializes the device, connects to WiFi, and establishes AWS IoT Core connection.
-
-#### `void loop()`
-
-Main program loop that handles MQTT communication, data publishing, and error monitoring.
-
-#### `void connectToWiFi()`
-
-Connects to the configured WiFi network with retry logic.
-
-#### `void connectToMQTT()`
-
-Establishes secure MQTT connection to AWS IoT Core.
-
-#### `void publishDeviceData()`
-
-Publishes sensor data to the data topic.
-
-#### `void publishHeartbeat()`
-
-Publishes device heartbeat information.
-
-#### `void handleCommand(String command, String payload)`
-
-Processes incoming MQTT commands.
-
-## Examples
-
-### Basic Sensor Data Publishing
+Enable error diagnostics in `device_config.h`:
 
 ```cpp
-void publishSensorData() {
-  // Read sensor values
-  float temperature = readTemperature();
-  float humidity = readHumidity();
-
-  // Create JSON message
-  DynamicJsonDocument doc(1024);
-  doc["timestamp"] = millis();
-  doc["temperature"] = temperature;
-  doc["humidity"] = humidity;
-  doc["device_id"] = THING_NAME;
-
-  // Publish to MQTT
-  String topic = String(MQTT_TOPIC_PREFIX) + "/data";
-  String payload;
-  serializeJson(doc, payload);
-
-  mqttClient.publish(topic.c_str(), payload.c_str());
-}
+const bool ENABLE_ERROR_DIAGNOSTICS = true;
 ```
 
-### Command Processing
+## File Structure
 
-```cpp
-void handleCommand(String command, String payload) {
-  DynamicJsonDocument doc(1024);
-  deserializeJson(doc, payload);
-
-  if (command == "set_led") {
-    bool state = doc["state"];
-    int brightness = doc["brightness"];
-
-    // Control LED
-    setLED(state, brightness);
-
-    // Send response
-    sendCommandResponse("set_led", "success", "LED updated");
-  }
-}
+```plaintext
+esp32-aws-iot/
+├── esp32-aws-iot.ino          # Main Arduino sketch
+├── device_config.h            # Device configuration
+├── aws_config.h              # AWS configuration (from Terraform)
+├── wifi_config.h             # WiFi credentials
+├── aws_config_template.h     # AWS config template
+├── wifi_config_template.h    # WiFi config template
+├── generate_aws_config.sh    # AWS config generation script
+├── generate_aws_config.ps1   # Windows AWS config generation
+└── .vscode/                  # VS Code configuration
 ```
+
+## Configuration Files
+
+### `device_config.h`
+
+- Device-specific settings
+- Timing intervals
+- Feature enable/disable switches
+- Sensor configuration
+
+### `aws_config.h`
+
+- AWS IoT endpoint and certificates
+- MQTT settings
+- Generated by Terraform
+
+### `wifi_config.h`
+
+- WiFi network credentials
+- Created from template
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
-
-## Support
-
-For issues and questions:
-
-1. Check the [Troubleshooting](#troubleshooting) section
-2. Review the [Error Handling](#error-handling) guide
-3. Check AWS IoT Core Console for resource status
-4. Open an issue on GitHub with detailed error information
+This project is licensed under the MIT License - see the LICENSE file for details.

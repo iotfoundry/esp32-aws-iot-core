@@ -9,6 +9,9 @@ esp32-aws-iot/wifi_config.h
 # Terraform sensitive files
 terraform/esp32_config.json
 
+# Terraform generated files
+terraform/AmazonRootCA1.pem
+
 # IDE and editor files
 .vscode/
 .idea/

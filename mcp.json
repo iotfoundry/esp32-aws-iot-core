@@ -1,0 +1,220 @@
+{
+  "mcpServers": {
+    "esp32-aws-iot": {
+      "command": "arduino-cli",
+      "args": [
+        "compile",
+        "--fqbn", "esp32:esp32:esp32",
+        "--output-dir", "./build",
+        "./esp32-aws-iot"
+      ],
+      "env": {
+        "ARDUINO_CLI_CONFIG_FILE": "./arduino-cli.yml"
+      }
+    },
+    "aws-iot-deploy": {
+      "command": "arduino-cli",
+      "args": [
+        "upload",
+        "--fqbn", "esp32:esp32:esp32",
+        "--port", "COM3",
+        "./esp32-aws-iot"
+      ],
+      "env": {
+        "ARDUINO_CLI_CONFIG_FILE": "./arduino-cli.yml"
+      }
+    },
+    "terraform-deploy": {
+      "command": "terraform",
+      "args": [
+        "apply",
+        "-auto-approve"
+      ],
+      "cwd": "./terraform"
+    },
+    "aws-config-generate": {
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "./esp32-aws-iot/generate_aws_config.ps1"
+      ],
+      "cwd": "./esp32-aws-iot"
+    }
+  },
+  "tools": [
+    {
+      "name": "compile_esp32",
+      "description": "Compile the ESP32 Arduino sketch",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fqbn": {
+            "type": "string",
+            "description": "Fully Qualified Board Name for ESP32",
+            "default": "esp32:esp32:esp32"
+          },
+          "output_dir": {
+            "type": "string",
+            "description": "Output directory for compiled binary",
+            "default": "./build"
+          }
+        }
+      }
+    },
+    {
+      "name": "upload_esp32",
+      "description": "Upload compiled sketch to ESP32 device",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "Serial port for ESP32 (e.g., COM3, /dev/ttyUSB0)",
+            "default": "COM3"
+          },
+          "fqbn": {
+            "type": "string",
+            "description": "Fully Qualified Board Name for ESP32",
+            "default": "esp32:esp32:esp32"
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "deploy_aws_infrastructure",
+      "description": "Deploy AWS IoT Core infrastructure using Terraform",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "auto_approve": {
+            "type": "boolean",
+            "description": "Auto-approve Terraform changes",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "name": "generate_aws_config",
+      "description": "Generate AWS configuration files for ESP32",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "description": "Platform to generate config for (powershell, bash)",
+            "enum": ["powershell", "bash"],
+            "default": "powershell"
+          }
+        }
+      }
+    },
+    {
+      "name": "monitor_serial",
+      "description": "Monitor ESP32 serial output for debugging",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "Serial port for ESP32 monitoring",
+            "default": "COM3"
+          },
+          "baud_rate": {
+            "type": "number",
+            "description": "Baud rate for serial communication",
+            "default": 115200
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "check_aws_connectivity",
+      "description": "Check AWS IoT Core connectivity and device status",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "thing_name": {
+            "type": "string",
+            "description": "AWS IoT Thing name to check",
+            "default": "basic-device"
+          },
+          "region": {
+            "type": "string",
+            "description": "AWS region",
+            "default": "ap-southeast-2"
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "file://./esp32-aws-iot/esp32-aws-iot.ino",
+      "name": "esp32_main_sketch",
+      "description": "Main ESP32 Arduino sketch for AWS IoT Core"
+    },
+    {
+      "uri": "file://./esp32-aws-iot/aws_config.h",
+      "name": "aws_config",
+      "description": "Generated AWS IoT Core configuration header"
+    },
+    {
+      "uri": "file://./esp32-aws-iot/wifi_config.h",
+      "name": "wifi_config",
+      "description": "WiFi configuration header"
+    },
+    {
+      "uri": "file://./terraform/main.tf",
+      "name": "terraform_config",
+      "description": "Terraform configuration for AWS infrastructure"
+    },
+    {
+      "uri": "file://./terraform/esp32_config.json",
+      "name": "esp32_config_json",
+      "description": "ESP32 configuration JSON from Terraform output"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "debug_mqtt_connection",
+      "description": "Debug MQTT connection issues with ESP32 and AWS IoT Core",
+      "arguments": [
+        {
+          "name": "error_code",
+          "description": "MQTT error code to debug",
+          "required": false
+        },
+        {
+          "name": "log_level",
+          "description": "Debug log level (basic, detailed, verbose)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "optimize_esp32_performance",
+      "description": "Optimize ESP32 performance for AWS IoT Core",
+      "arguments": [
+        {
+          "name": "optimization_type",
+          "description": "Type of optimization (memory, power, network, stability)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "troubleshoot_aws_iot",
+      "description": "Troubleshoot AWS IoT Core connectivity issues",
+      "arguments": [
+        {
+          "name": "issue_type",
+          "description": "Type of issue (certificate, policy, network, mqtt)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

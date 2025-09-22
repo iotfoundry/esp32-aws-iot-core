@@ -9,6 +9,7 @@ This Terraform configuration creates AWS IoT Core resources for ESP32 device con
 - 1 IoT Policy (comprehensive inline JSON)
 - Policy attachment to certificate
 - Certificate attachment to thing
+- Amazon Root CA certificate file (`AmazonRootCA1.pem`)
 
 ## Usage
 
@@ -30,14 +31,24 @@ terraform apply
 
 ### 2. Generate ESP32 Configuration
 
+**Windows (PowerShell):**
+
+```powershell
+# Generate configuration file for ESP32 (PowerShell)
+terraform output --json | Out-File -FilePath esp32_config.json -Encoding utf8
+```
+
+**Linux/macOS (Bash):**
+
 ```bash
-# Generate configuration file for ESP32
+# Generate configuration file for ESP32 (Linux/macOS)
 terraform output -json > esp32_config.json
 ```
 
 This creates:
 
 - `esp32_config.json` - JSON format with all AWS IoT values (contains sensitive data - do not commit to git)
+- `AmazonRootCA1.pem` - Amazon Root CA certificate (safe to commit to git)
 
 ### 3. View Outputs
 
@@ -169,6 +180,7 @@ terraform destroy
 terraform/
 ├── main.tf              # Complete configuration (provider, module, outputs)
 ├── esp32_config.json    # Generated configuration (contains secrets - gitignored)
+├── AmazonRootCA1.pem    # Amazon Root CA certificate (auto-generated)
 ├── .gitignore          # Git ignore rules including esp32_config.json
 └── README.md           # This documentation
 ```

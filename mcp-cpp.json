@@ -1,0 +1,347 @@
+{
+  "mcpServers": {
+    "esp32-cpp-compiler": {
+      "command": "arduino-cli",
+      "args": [
+        "compile",
+        "--fqbn", "esp32:esp32:esp32",
+        "--output-dir", "./build",
+        "--verbose",
+        "./esp32-aws-iot"
+      ],
+      "env": {
+        "ARDUINO_CLI_CONFIG_FILE": "./arduino-cli.yml",
+        "CXXFLAGS": "-std=c++17 -Wall -Wextra -O2"
+      }
+    },
+    "esp32-cpp-upload": {
+      "command": "arduino-cli",
+      "args": [
+        "upload",
+        "--fqbn", "esp32:esp32:esp32",
+        "--port", "COM3",
+        "--verbose",
+        "./esp32-aws-iot"
+      ],
+      "env": {
+        "ARDUINO_CLI_CONFIG_FILE": "./arduino-cli.yml"
+      }
+    },
+    "cpp-lint": {
+      "command": "cpplint",
+      "args": [
+        "--filter=-build/include,-build/include_order,-build/namespaces",
+        "--extensions=cpp,h,ino",
+        "./esp32-aws-iot/*.ino",
+        "./esp32-aws-iot/*.cpp",
+        "./esp32-aws-iot/*.h"
+      ]
+    },
+    "cpp-format": {
+      "command": "clang-format",
+      "args": [
+        "-i",
+        "--style=Google",
+        "./esp32-aws-iot/*.ino",
+        "./esp32-aws-iot/*.cpp",
+        "./esp32-aws-iot/*.h"
+      ]
+    },
+    "cpp-analyze": {
+      "command": "cppcheck",
+      "args": [
+        "--enable=all",
+        "--std=c++17",
+        "--platform=unix64",
+        "--suppress=missingIncludeSystem",
+        "./esp32-aws-iot/"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "compile_cpp_esp32",
+      "description": "Compile C++ code for ESP32 with optimizations",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fqbn": {
+            "type": "string",
+            "description": "Fully Qualified Board Name for ESP32",
+            "default": "esp32:esp32:esp32"
+          },
+          "optimization": {
+            "type": "string",
+            "description": "C++ optimization level",
+            "enum": ["-O0", "-O1", "-O2", "-O3", "-Os"],
+            "default": "-O2"
+          },
+          "std_version": {
+            "type": "string",
+            "description": "C++ standard version",
+            "enum": ["c++11", "c++14", "c++17", "c++20"],
+            "default": "c++17"
+          },
+          "warnings": {
+            "type": "boolean",
+            "description": "Enable compiler warnings",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "name": "upload_cpp_esp32",
+      "description": "Upload compiled C++ code to ESP32 device",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "Serial port for ESP32",
+            "default": "COM3"
+          },
+          "fqbn": {
+            "type": "string",
+            "description": "Fully Qualified Board Name for ESP32",
+            "default": "esp32:esp32:esp32"
+          },
+          "verify": {
+            "type": "boolean",
+            "description": "Verify upload after completion",
+            "default": true
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "lint_cpp_code",
+      "description": "Lint C++ code for style and best practices",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "style": {
+            "type": "string",
+            "description": "Coding style to enforce",
+            "enum": ["Google", "LLVM", "Chromium", "Mozilla", "WebKit"],
+            "default": "Google"
+          },
+          "extensions": {
+            "type": "array",
+            "description": "File extensions to check",
+            "items": {"type": "string"},
+            "default": ["cpp", "h", "ino"]
+          },
+          "filters": {
+            "type": "array",
+            "description": "Filters to apply",
+            "items": {"type": "string"},
+            "default": ["-build/include", "-build/include_order"]
+          }
+        }
+      }
+    },
+    {
+      "name": "format_cpp_code",
+      "description": "Format C++ code according to style guidelines",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "style": {
+            "type": "string",
+            "description": "Code formatting style",
+            "enum": ["Google", "LLVM", "Chromium", "Mozilla", "WebKit"],
+            "default": "Google"
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Modify files in place",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "name": "analyze_cpp_code",
+      "description": "Static analysis of C++ code for bugs and issues",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "enable_checks": {
+            "type": "array",
+            "description": "Analysis checks to enable",
+            "items": {"type": "string"},
+            "default": ["all"]
+          },
+          "std_version": {
+            "type": "string",
+            "description": "C++ standard version",
+            "enum": ["c++11", "c++14", "c++17", "c++20"],
+            "default": "c++17"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Target platform",
+            "enum": ["unix32", "unix64", "win32", "win64"],
+            "default": "unix64"
+          }
+        }
+      }
+    },
+    {
+      "name": "debug_cpp_esp32",
+      "description": "Debug C++ code on ESP32 with GDB",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "Serial port for ESP32",
+            "default": "COM3"
+          },
+          "baud_rate": {
+            "type": "number",
+            "description": "Serial baud rate",
+            "default": 115200
+          },
+          "breakpoints": {
+            "type": "array",
+            "description": "Breakpoints to set",
+            "items": {"type": "string"}
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "profile_cpp_performance",
+      "description": "Profile C++ code performance on ESP32",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "metrics": {
+            "type": "array",
+            "description": "Performance metrics to measure",
+            "items": {"type": "string"},
+            "default": ["memory", "cpu", "timing"]
+          },
+          "duration": {
+            "type": "number",
+            "description": "Profiling duration in seconds",
+            "default": 60
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "file://./esp32-aws-iot/esp32-aws-iot.ino",
+      "name": "main_cpp_sketch",
+      "description": "Main C++ Arduino sketch for ESP32"
+    },
+    {
+      "uri": "file://./esp32-aws-iot/aws_config.h",
+      "name": "aws_config_header",
+      "description": "AWS IoT Core configuration header file"
+    },
+    {
+      "uri": "file://./esp32-aws-iot/wifi_config.h",
+      "name": "wifi_config_header",
+      "description": "WiFi configuration header file"
+    },
+    {
+      "uri": "file://./esp32-aws-iot/aws_config_template.h",
+      "name": "config_template_header",
+      "description": "Configuration template header file"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "optimize_cpp_memory",
+      "description": "Optimize C++ code for memory usage on ESP32",
+      "arguments": [
+        {
+          "name": "optimization_level",
+          "description": "Memory optimization level (low, medium, high, aggressive)",
+          "required": true
+        },
+        {
+          "name": "target_usage",
+          "description": "Target memory usage in bytes",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "debug_cpp_compilation",
+      "description": "Debug C++ compilation issues on ESP32",
+      "arguments": [
+        {
+          "name": "error_type",
+          "description": "Type of compilation error",
+          "required": true
+        },
+        {
+          "name": "verbose_output",
+          "description": "Enable verbose compilation output",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "analyze_cpp_performance",
+      "description": "Analyze C++ code performance bottlenecks",
+      "arguments": [
+        {
+          "name": "analysis_type",
+          "description": "Type of performance analysis (cpu, memory, timing, all)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "refactor_cpp_code",
+      "description": "Refactor C++ code for better structure and maintainability",
+      "arguments": [
+        {
+          "name": "refactor_type",
+          "description": "Type of refactoring (extract_method, inline_method, rename_variable, etc.)",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "cppConfig": {
+    "compiler": {
+      "standard": "c++17",
+      "optimization": "-O2",
+      "warnings": ["-Wall", "-Wextra", "-Wpedantic"],
+      "defines": ["ARDUINO=10819", "ESP32"]
+    },
+    "linter": {
+      "style": "Google",
+      "filters": ["-build/include", "-build/include_order", "-build/namespaces"],
+      "extensions": ["cpp", "h", "ino"]
+    },
+    "formatter": {
+      "style": "Google",
+      "indent_width": 2,
+      "use_tabs": false
+    },
+    "analyzer": {
+      "enable_checks": ["all"],
+      "platform": "unix64",
+      "std_version": "c++17"
+    },
+    "esp32": {
+      "board": "esp32:esp32:esp32",
+      "cpu_freq": "240MHz",
+      "flash_mode": "dio",
+      "flash_freq": "80MHz",
+      "flash_size": "4MB",
+      "partition_scheme": "default"
+    }
+  }
+}
